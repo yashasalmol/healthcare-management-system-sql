@@ -1,0 +1,79 @@
+-- 1. Show all patients
+SELECT * FROM patient;
+
+-- 2. Show all doctors with their department name
+SELECT d.doctorid, d.fullname, d.specialization, dep.departmentname
+FROM doctor d
+JOIN department dep ON d.departmentid = dep.departmentid;
+
+-- 3. List all appointments with patient and doctor names
+SELECT a.appointmentid, p.fullname AS patient_name, d.fullname AS doctor_name, a.appointmentdatetime
+FROM appointment a
+JOIN patient p ON a.patientid = p.patientid
+JOIN doctor d ON a.doctorid = d.doctorid;
+
+-- 4. Show all encounters with patient and doctor details
+SELECT e.encounterid, p.fullname AS patient_name, d.fullname AS doctor_name, e.encounterdatetime
+FROM encounter e
+JOIN patient p ON e.patientid = p.patientid
+JOIN doctor d ON e.doctorid = d.doctorid;
+
+-- 5. Show prescriptions with patient and doctor names
+SELECT pr.prescriptionid, p.fullname AS patient_name, d.fullname AS doctor_name, pr.prescriptiondate
+FROM prescription pr
+JOIN patient p ON pr.patientid = p.patientid
+JOIN doctor d ON pr.doctorid = d.doctorid;
+
+-- 6. Show medicines prescribed to each patient
+SELECT p.fullname AS patient_name, m.medicationname, pm.dosage, pm.duration
+FROM prescriptionmedication pm
+JOIN prescription pr ON pm.prescriptionid = pr.prescriptionid
+JOIN patient p ON pr.patientid = p.patientid
+JOIN medication m ON pm.medicationid = m.medicationid;
+
+-- 7. List all diagnostic tests with test type
+SELECT dt.testid, p.fullname AS patient_name, tt.testtypename, dt.testdate
+FROM diagnostictest dt
+JOIN patient p ON dt.patientid = p.patientid
+JOIN testtype tt ON dt.testtypeid = tt.testtypeid;
+
+-- 8. Show diagnosis with diseases
+SELECT dg.diagnosisid, ds.diseasename, dg.diagnosisdate
+FROM diagnosis dg
+JOIN diagnosisdisease dd ON dg.diagnosisid = dd.diagnosisid
+JOIN disease ds ON dd.diseaseid = ds.diseaseid;
+
+-- 9. List procedures done during encounters
+SELECT ep.encprocid, pm.procedurename, ep.proceduredate, ep.resultnotes
+FROM encounterprocedure ep
+JOIN proceduremaster pm ON ep.procedureid = pm.procedureid;
+
+-- 10. Show billing details with patient name
+SELECT b.invoiceid, p.fullname AS patient_name, b.totalamount, b.paidamount, b.paymentstatus
+FROM billing b
+JOIN encounter e ON b.encounterid = e.encounterid
+JOIN patient p ON e.patientid = p.patientid;
+
+-- 11. Count total patients
+SELECT COUNT(*) AS total_patients FROM patient;
+
+-- 12. Count doctors in each department
+SELECT dep.departmentname, COUNT(d.doctorid) AS total_doctors
+FROM doctor d
+JOIN department dep ON d.departmentid = dep.departmentid
+GROUP BY dep.departmentname;
+
+-- 13. Show unpaid bills
+SELECT * FROM billing
+WHERE paymentstatus <> 'Paid';
+
+-- 14. Find patients who have insurance
+SELECT p.fullname, i.providername, i.policynumber
+FROM patient p
+JOIN insurance i ON p.patientid = i.patientid;
+
+-- 15. Show appointments for a specific doctor (example: doctorid = 1)
+SELECT a.appointmentid, p.fullname AS patient_name, a.appointmentdatetime
+FROM appointment a
+JOIN patient p ON a.patientid = p.patientid
+WHERE a.doctorid = 1;

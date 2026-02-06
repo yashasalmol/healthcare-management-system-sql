@@ -1,0 +1,234 @@
+-- 1. Create database
+CREATE DATABASE healthcare;
+USE healthcare;
+
+-- 2. Create tables
+CREATE TABLE department (
+  departmentid INT PRIMARY KEY,
+  departmentname VARCHAR(100) NOT NULL,
+  location VARCHAR(100)
+);
+
+CREATE TABLE insurance (
+  insuranceid INT PRIMARY KEY,
+  providername VARCHAR(100),
+  policynumber VARCHAR(100),
+  approvalstatus VARCHAR(50)
+);
+
+CREATE TABLE patient (
+  patientid INT PRIMARY KEY,
+  insuranceid INT,
+  fullname VARCHAR(150) NOT NULL,
+  dob DATE,
+  age INT,
+  gender VARCHAR(10),
+  bloodgroup VARCHAR(5),
+  email VARCHAR(100),
+  address VARCHAR(100),
+  FOREIGN KEY (insuranceid) REFERENCES insurance(insuranceid)
+);
+
+CREATE TABLE doctor (
+  doctorid INT PRIMARY KEY,
+  departmentid INT,
+  fullname VARCHAR(150),
+  gender VARCHAR(10),
+  mobileno VARCHAR(20),
+  specialization VARCHAR(100),
+  experienceyears INT,
+  FOREIGN KEY (departmentid) REFERENCES department(departmentid)
+);
+
+CREATE TABLE appointment (
+  appointmentid INT PRIMARY KEY,
+  patientid INT,
+  doctorid INT,
+  appointmentdatetime DATETIME,
+  reason VARCHAR(100),
+  FOREIGN KEY (patientid) REFERENCES patient(patientid),
+  FOREIGN KEY (doctorid) REFERENCES doctor(doctorid)
+);
+
+CREATE TABLE encounter (
+  encounterid INT PRIMARY KEY,
+  appointmentid INT,
+  encounterdatetime DATETIME,
+  actual_reason VARCHAR(100),
+  patientid INT,
+  doctorid INT,
+  FOREIGN KEY (appointmentid) REFERENCES appointment(appointmentid),
+  FOREIGN KEY (patientid) REFERENCES patient(patientid),
+  FOREIGN KEY (doctorid) REFERENCES doctor(doctorid)
+);
+
+CREATE TABLE prescription (
+  prescriptionid INT PRIMARY KEY,
+  encounterid INT,
+  prescriptiondate DATE,
+  FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+);
+
+CREATE TABLE medication (
+  medicationid INT PRIMARY KEY,
+  medicationname VARCHAR(100),
+  manufacturer VARCHAR(100)
+);
+
+CREATE TABLE prescriptionmedication (
+  prescriptionmedicationid INT PRIMARY KEY,
+  prescriptionid INT,
+  medicationid INT,
+  dosage VARCHAR(50),
+  duration VARCHAR(50),
+  FOREIGN KEY (prescriptionid) REFERENCES prescription(prescriptionid),
+  FOREIGN KEY (medicationid) REFERENCES medication(medicationid)
+);
+
+CREATE TABLE testtype (
+  testtypeid INT PRIMARY KEY,
+  testtypename VARCHAR(100)
+);
+
+CREATE TABLE diagnosis (
+  diagnosisid INT PRIMARY KEY,
+  encounterid INT,
+  diagnosisdate DATE,
+  diagnosisdescription VARCHAR(100),
+  FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+);
+
+CREATE TABLE disease (
+  diseaseid INT PRIMARY KEY,
+  diseasename VARCHAR(100),
+  description VARCHAR(100)
+);
+
+CREATE TABLE diagnosisdisease (
+  diagdiseaseid INT PRIMARY KEY,
+  diagnosisid INT,
+  diseaseid INT,
+  FOREIGN KEY (diagnosisid) REFERENCES diagnosis(diagnosisid),
+  FOREIGN KEY (diseaseid) REFERENCES disease(diseaseid)
+);
+
+CREATE TABLE proceduremaster (
+  procedureid INT PRIMARY KEY,
+  procedurename VARCHAR(100),
+  proceduretype VARCHAR(100),
+  procedurecost DECIMAL(10,2),
+  description VARCHAR(100)
+);
+
+CREATE TABLE encounterprocedure (
+  encprocid INT PRIMARY KEY,
+  encounterid INT,
+  procedureid INT,
+  proceduredate DATETIME,
+  resultnotes VARCHAR(50),
+  FOREIGN KEY (encounterid) REFERENCES encounter(encounterid),
+  FOREIGN KEY (procedureid) REFERENCES proceduremaster(procedureid)
+);
+
+CREATE TABLE billing (
+  invoiceid INT PRIMARY KEY,
+  encounterid INT,
+  invoicedate DATE,
+  totalamount DECIMAL(10,2),
+  paidamount DECIMAL(10,2),
+  paymentstatus VARCHAR(50),
+  FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+);
+
+-- 3. Insert data
+INSERT INTO department VALUES
+(1,'Cardiology','Block A'),(2,'Neurology','Block B'),(3,'Orthopedics','Block C'),
+(4,'Radiology','Block D'),(5,'ENT','Block E'),(6,'Dermatology','Block F'),
+(7,'Pediatrics','Block G'),(8,'Oncology','Block H'),(9,'Urology','Block I'),
+(10,'Gastroenterology','Block J');
+
+INSERT INTO insurance VALUES
+(1,'LIC','LIC101','Approved'),(2,'Star Health','STAR102','Approved'),
+(3,'HDFC Ergo','HDFC103','Pending'),(4,'ICICI Lombard','ICICI104','Approved'),
+(5,'Religare','REL105','Rejected'),(6,'Bajaj Allianz','BA106','Approved'),
+(7,'Care Health','CARE107','Pending'),(8,'Max Bupa','MAX108','Approved'),
+(9,'Tata AIG','TATA109','Approved'),(10,'New India','NI110','Approved');
+
+INSERT INTO patient VALUES
+(1,1,'Rahul Patil','1998-05-12',26,'Male','O+','rahul@gmail.com','Pune'),
+(2,2,'Sneha Joshi','1995-03-20',29,'Female','A+','sneha@gmail.com','Mumbai'),
+(3,3,'Amit Deshmukh','1990-07-11',34,'Male','B+','amit@gmail.com','Nagpur'),
+(4,4,'Neha Kulkarni','2000-01-15',24,'Female','AB+','neha@gmail.com','Pune'),
+(5,5,'Rohit Jadhav','1988-09-10',36,'Male','O-','rohit@gmail.com','Nashik'),
+(6,6,'Pooja Patil','1996-11-05',28,'Female','A-','pooja@gmail.com','Kolhapur'),
+(7,7,'Anil More','1992-02-18',32,'Male','B-','anil@gmail.com','Satara'),
+(8,8,'Kiran Shinde','1999-06-25',25,'Male','O+','kiran@gmail.com','Solapur'),
+(9,9,'Riya Pawar','2001-08-30',23,'Female','AB-','riya@gmail.com','Pune'),
+(10,10,'Suresh Patil','1985-12-12',39,'Male','A+','suresh@gmail.com','Ahmednagar');
+
+INSERT INTO doctor VALUES
+(1,1,'Dr Amit Sharma','Male','9876543210','Heart',10),
+(2,2,'Dr Neha Patil','Female','9876543211','Brain',8),
+(3,3,'Dr Rohit Kale','Male','9876543212','Bone',6),
+(4,4,'Dr Sneha Joshi','Female','9876543213','X-Ray',5),
+(5,5,'Dr Kunal Mehta','Male','9876543214','ENT',7),
+(6,6,'Dr Pooja Desai','Female','9876543215','Skin',9),
+(7,7,'Dr Anil Rao','Male','9876543216','Child',11),
+(8,8,'Dr Seema Shah','Female','9876543217','Cancer',12),
+(9,9,'Dr Nitin Kulkarni','Male','9876543218','Urine',6),
+(10,10,'Dr Riya Verma','Female','9876543219','Stomach',8);
+
+INSERT INTO appointment VALUES
+(1,1,1,'2024-01-10 10:00:00','Chest pain'),
+(2,2,2,'2024-01-11 11:00:00','Headache'),
+(3,3,3,'2024-01-12 12:00:00','Knee pain'),
+(4,4,4,'2024-01-13 13:00:00','X-ray'),
+(5,5,5,'2024-01-14 14:00:00','Ear pain'),
+(6,6,6,'2024-01-15 15:00:00','Skin rash'),
+(7,7,7,'2024-01-16 10:30:00','Fever'),
+(8,8,8,'2024-01-17 11:30:00','Cancer review'),
+(9,9,9,'2024-01-18 12:30:00','Urine issue'),
+(10,10,10,'2024-01-19 09:30:00','Stomach pain');
+
+INSERT INTO encounter VALUES
+(1,1,'2024-01-10 10:15:00','Chest discomfort',1,1),
+(2,2,'2024-01-11 11:15:00','Migraine',2,2),
+(3,3,'2024-01-12 12:15:00','Joint pain',3,3),
+(4,4,'2024-01-13 13:15:00','Imaging',4,4),
+(5,5,'2024-01-14 14:15:00','Ear infection',5,5),
+(6,6,'2024-01-15 15:15:00','Allergy',6,6),
+(7,7,'2024-01-16 10:45:00','Viral fever',7,7),
+(8,8,'2024-01-17 11:45:00','Cancer follow-up',8,8),
+(9,9,'2024-01-18 12:45:00','UTI',9,9),
+(10,10,'2024-01-19 09:45:00','Gastritis',10,10);
+
+INSERT INTO billing VALUES
+(1,1,'2024-01-10',8000,8000,'Paid'),
+(2,2,'2024-01-11',6000,6000,'Paid'),
+(3,3,'2024-01-12',15000,5000,'Pending'),
+(4,4,'2024-01-13',3000,3000,'Paid'),
+(5,5,'2024-01-14',4000,4000,'Paid'),
+(6,6,'2024-01-15',2500,2000,'Pending'),
+(7,7,'2024-01-16',1500,1500,'Paid'),
+(8,8,'2024-01-17',20000,10000,'Pending'),
+(9,9,'2024-01-18',12000,12000,'Paid'),
+(10,10,'2024-01-19',8000,8000,'Paid');
+
+-- 4. Sample SELECT queries (optional)
+SELECT * FROM department;
+SELECT * FROM patient;
+SELECT * FROM insurance;
+SELECT * FROM doctor;
+SELECT * FROM appointment;
+SELECT * FROM encounter;
+SELECT * FROM prescription;
+SELECT * FROM medication;
+SELECT * FROM prescriptionmedication;
+SELECT * FROM testtype;
+SELECT * FROM diagnostictest;
+SELECT * FROM diagnosis;
+SELECT * FROM disease;
+SELECT * FROM diagnosisdisease;
+SELECT * FROM proceduremaster;
+SELECT * FROM encounterprocedure;
+SELECT * FROM billing;
